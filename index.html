@@ -3,246 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ứng dụng Chấm Điểm Phát Âm Tiếng Anh (US)</title>
+    <title>Ứng dụng Chấm Điểm Phát Âm Anh-Mỹ</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f4f7f6;
-            color: #333;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
         }
         .container {
-            background-color: #fff;
+            background-color: white;
             padding: 30px;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 600px;
-            box-sizing: border-box;
-        }
-        h2 {
             text-align: center;
-            color: #2c3e50;
-            margin-top: 0;
-        }
-        .input-group {
-            margin-bottom: 20px;
-        }
-        label {
-            font-weight: bold;
-            display: block;
-            margin-bottom: 8px;
-        }
-        textarea {
+            max-width: 500px;
             width: 100%;
-            height: 80px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            resize: vertical;
-            font-size: 16px;
-            box-sizing: border-box;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        .phrase-box {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1a73e8;
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #e8f0fe;
+            border-radius: 8px;
+            word-wrap: break-word;
         }
         .btn-group {
             display: flex;
             gap: 10px;
+            justify-content: center;
             margin-bottom: 20px;
         }
         button {
-            flex: 1;
-            padding: 12px;
-            font-size: 16px;
-            font-weight: bold;
+            padding: 12px 20px;
+            font-size: 15px;
+            font-weight: 600;
             border: none;
-            border-radius: 6px;
+            border-radius: 25px;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: background 0.3s, transform 0.1s;
         }
-        #btn-speak { background-color: #3498db; color: white; }
-        #btn-speak:hover { background-color: #2980b9; }
-        #btn-record { background-color: #2ecc71; color: white; }
-        #btn-record.recording { background-color: #e74c3c; animation: pulse 1.5s infinite; }
+        button:active {
+            transform: scale(0.98);
+        }
+        #startBtn { background-color: #1a73e8; color: white; }
+        #startBtn:hover { background-color: #1557b0; }
+        #startBtn:disabled { background-color: #ccc; cursor: not-allowed; }
         
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.02); }
-            100% { transform: scale(1); }
+        #nextBtn { background-color: #34a853; color: white; }
+        #nextBtn:hover { background-color: #2d8e47; }
+
+        .custom-phrase-section {
+            border-top: 1px solid #eee;
+            margin-top: 25px;
+            padding-top: 20px;
+            text-align: left;
         }
+        .custom-phrase-section h3 {
+            margin-top: 0;
+            color: #555;
+            font-size: 16px;
+        }
+        .input-group {
+            display: flex;
+            gap: 8px;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            font-size: 14px;
+            outline: none;
+        }
+        input[type="text"]:focus {
+            border-color: #1a73e8;
+        }
+        #addBtn {
+            background-color: #555;
+            color: white;
+            padding: 10px 18px;
+            font-size: 14px;
+        }
+        #addBtn:hover { background-color: #333; }
 
         .result-box {
-            background-color: #f9f9f9;
-            border-left: 5px solid #3498db;
+            margin-top: 25px;
+            text-align: left;
+            background: #fafafa;
             padding: 15px;
-            border-radius: 4px;
-            margin-top: 15px;
+            border-radius: 8px;
         }
         .score {
-            font-size: 24px;
+            font-size: 28px;
             font-weight: bold;
             text-align: center;
-            margin: 15px 0;
+            margin: 10px 0;
         }
-        .good { color: #2ecc71; }
-        .acceptable { color: #f1c40f; }
-        .bad { color: #e74c3c; }
-        
-        .diff-text span {
-            padding: 2px 4px;
-            border-radius: 3px;
-            margin: 0 2px;
-            display: inline-block;
+        .status {
+            color: #666;
+            font-style: italic;
+            margin-top: 0;
         }
-        .match { background-color: #d4edda; color: #155724; }
-        .mismatch { background-color: #f8d7da; color: #721c24; text-decoration: line-through; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Luyện Phát Âm Tiếng Anh (US)</h2>
+    <h1>Phát Âm Chuẩn Anh-Mỹ</h1>
+    <p style="color: #666;">Hãy đọc to cụm từ bên dưới:</p>
     
-    <div class="input-group">
-        <label for="target-text">Câu mẫu muốn luyện nói:</label>
-        <textarea id="target-text" placeholder="Nhập câu tiếng Anh vào đây...">Hello, how are you doing today? Welcome to the English pronunciation practice application.</textarea>
-    </div>
-
+    <div class="phrase-box" id="targetPhrase">Beautiful weather today</div>
+    
     <div class="btn-group">
-        <button id="btn-speak" type="button">🔈 Nghe câu mẫu</button>
-        <button id="btn-record" type="button">🎙️ Bắt đầu nói</button>
+        <button id="startBtn">🎤 Bắt đầu nói</button>
+        <button id="nextBtn">Đổi câu khác</button>
     </div>
 
-    <div class="result-box" id="result-area" style="display: none;">
-        <h3>Kết quả phân tích:</h3>
-        <p><strong>Bạn đã nói:</strong> <span id="user-speech" style="font-style: italic; color: #555;"></span></p>
-        <div class="score" id="score-display">0%</div>
-        <p><strong>So sánh chi tiết:</strong></p>
-        <div id="diff-display" class="diff-text"></div>
+    <div class="result-box">
+        <p class="status" id="statusText">Nhấn nút và cho phép sử dụng Micro để luyện tập.</p>
+        <p><strong>Bạn đã nói:</strong> <span id="speechResult" style="color: #555;">...</span></p>
+        <div class="score" id="scoreResult"></div>
+    </div>
+
+    <div class="custom-phrase-section">
+        <h3>Tự thêm câu luyện tập của bạn:</h3>
+        <div class="input-group">
+            <input type="text" id="customInput" placeholder="Nhập câu tiếng Anh vào đây...">
+            <button id="addBtn">Thêm & Luyện câu này</button>
+        </div>
     </div>
 </div>
 
 <script>
-    // Kiểm tra hỗ trợ trình duyệt
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const SpeechSynthesis = window.speechSynthesis;
+    // Danh sách các câu mẫu ban đầu
+    let phrases = [
+        "Beautiful weather today",
+        "How are you doing",
+        "Google Speech API is awesome",
+        "Practice makes perfect",
+        "I love learning English"
+    ];
 
-    if (!SpeechRecognition) {
-        alert("Trình duyệt của bạn không hỗ trợ nhận diện giọng nói. Vui lòng dùng Google Chrome hoặc Microsoft Edge.");
-    }
+    let currentPhraseIndex = 0;
 
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'en-US'; // Thiết lập chuẩn giọng Anh - Mỹ
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
-
-    const targetTextInput = document.getElementById('target-text');
-    const btnSpeak = document.getElementById('btn-speak');
-    const btnRecord = document.getElementById('btn-record');
-    const resultArea = document.getElementById('result-area');
-    const userSpeechSpan = document.getElementById('user-speech');
-    const scoreDisplay = document.getElementById('score-display');
-    const diffDisplay = document.getElementById('diff-display');
-
-    let isRecording = false;
-
-    // 1. Chức năng đọc mẫu (Text-to-Speech)
-    btnSpeak.addEventListener('click', () => {
-        const text = targetTextInput.value.trim();
-        if (!text) return alert("Vui lòng nhập văn bản để nghe mẫu!");
-        
-        // Hủy các câu đang đọc dở trước đó
-        SpeechSynthesis.cancel();
-        
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'en-US'; // Giọng đọc chuẩn Mỹ
-        SpeechSynthesis.speak(utterance);
-    });
-
-    // 2. Chức năng ghi âm & Nhận diện (Speech-to-Text)
-    btnRecord.addEventListener('click', () => {
-        if (isRecording) {
-            recognition.stop();
-        } else {
-            if (!targetTextInput.value.trim()) {
-                alert("Hãy nhập câu mẫu trước khi luyện nói!");
-                return;
-            }
-            recognition.start();
-        }
-    });
-
-    recognition.onstart = () => {
-        isRecording = true;
-        btnRecord.textContent = "🛑 Đang lắng nghe... Nói đi!";
-        btnRecord.classList.add('recording');
-    };
-
-    recognition.onend = () => {
-        isRecording = false;
-        btnRecord.textContent = "🎙️ Bắt đầu nói";
-        btnRecord.classList.remove('recording');
-    };
-
-    recognition.onerror = (event) => {
-        console.error(event.error);
-        alert("Đã xảy ra lỗi nhận diện: " + event.error);
-    };
-
-    recognition.onresult = (event) => {
-        const userSpeechText = event.results[0][0].transcript;
-        userSpeechSpan.textContent = userSpeechText;
-        
-        // Tiến hành chấm điểm và so sánh
-        analyzePronunciation(targetTextInput.value.trim(), userSpeechText);
-        resultArea.style.display = "block";
-    };
-
-    // 3. Thuật toán xử lý và chấm điểm cơ bản
-    function analyzePronunciation(target, user) {
-        // Chuẩn hóa chuỗi: chuyển chữ thường, xóa dấu câu
-        const cleanString = (str) => str.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g,"").replace(/\s+/g," ").trim();
-        
-        const targetWords = cleanString(target).split(" ");
-        const userWords = cleanString(user).split(" ");
-        
-        let matchCount = 0;
-        let htmlOutput = "";
-
-        // So sánh từng từ của câu gốc với câu người dùng nói
-        targetWords.forEach((word) => {
-            // Kiểm tra xem từ đó có xuất hiện trong đoạn người dùng nói không (đơn giản hóa)
-            const index = userWords.indexOf(word);
-            if (index !== -1) {
-                matchCount++;
-                htmlOutput += `<span class="match">${word}</span> `;
-                // Xóa từ đã khớp để tránh trùng lặp nếu nói lại từ đó
-                userWords.splice(index, 1);
-            } else {
-                htmlOutput += `<span class="mismatch">${word}</span> `;
-            }
-        });
-
-        // Tính tỷ lệ phần trăm chính xác
-        const scorePercentage = Math.round((matchCount / targetWords.length) * 100);
-        
-        // Hiển thị điểm số và màu sắc tương ứng
-        scoreDisplay.textContent = scorePercentage + "%";
-        scoreDisplay.className = "score"; // reset
-        if (scorePercentage >= 80) {
-            scoreDisplay.classList.add('good');
-        } else if (scorePercentage >= 50) {
-            scoreDisplay.classList.add('acceptable');
-        } else {
-            scoreDisplay.classList.add('bad');
-        }
-
-        // Hiển thị các từ đúng/sai trực quan
-        diffDisplay.innerHTML = htmlOutput;
-    }
-</script>
-
-</body>
-</html>
+    // Kiểm tra tính năng nhận diện giọng nói của trình duyệt
