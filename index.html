@@ -1,32 +1,256 @@
-recognition.onresult = (event) => {
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ứng Dụng Phát Âm Chuẩn Anh - Mỹ</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
 
-  const spokenText =
-    event.results[0][0].transcript;
+        body {
+            background: linear-gradient(135deg, #e0eafc, #cfdef3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
 
-  const targetText =
-    document.getElementById("targetText").value;
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+        }
 
-  const result =
-    calculateScore(targetText, spokenText);
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
 
-  document.getElementById("score").innerText =
-    result.score + "%";
+        .form-group {
+            margin-bottom: 20px;
+        }
 
-  document.getElementById("spokenText").innerHTML =
-    `
-    <p><b>You said:</b> ${spokenText}</p>
-    <p>${result.html}</p>
-    `;
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #34495e;
+            font-weight: 600;
+        }
 
-};
+        textarea {
+            width: 100%;
+            height: 120px;
+            padding: 12px;
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            resize: none;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
 
-recognition.onerror = (event) => {
+        textarea:focus {
+            border-color: #3498db;
+            outline: none;
+        }
 
-  document.getElementById("spokenText").innerHTML =
-    "Error: " + event.error;
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            font-size: 16px;
+            background-color: white;
+        }
 
-};
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
 
+        .control-item {
+            flex: 1;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            margin-top: 5px;
+        }
+
+        .range-value {
+            font-size: 14px;
+            color: #7f8c8d;
+            float: right;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        button:hover {
+            background-color: #27ae60;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🇺🇸 Phát Âm Tiếng Anh Mỹ (US)</h1>
+    
+    <div class="form-group">
+        <label for="text-input">Nhập câu tiếng Anh của bạn:</label>
+        <textarea id="text-input" placeholder="Ví dụ: Hello! How are you doing today? Welcome to our English speaking app."></textarea>
+    </div>
+
+    <div class="form-group">
+        <label for="voice-select">Chọn giọng đọc (Ưu tiên giọng Mỹ - en-US):</label>
+        <select id="voice-select">
+            <option value="">Đang tải danh sách giọng đọc...</option>
+        </select>
+    </div>
+
+    <div class="controls">
+        <div class="control-item">
+            <label for="rate">Tốc độ: <span id="rate-value" class="range-value">1x</span></label>
+            <input type="range" id="rate" min="0.5" max="2" value="1" step="0.1">
+        </div>
+        <div class="control-item">
+            <label for="pitch">Cao độ: <span id="pitch-value" class="range-value">1</span></label>
+            <input type="range" id="pitch" min="0.5" max="2" value="1" step="0.1">
+        </div>
+    </div>
+
+    <button id="speak-btn">Speak / Phát Âm</button>
+</div>
+
+<script>
+    // Khởi tạo đối tượng SpeechSynthesis
+    const synth = window.speechSynthesis;
+
+    // Lấy các phần tử giao diện
+    const textInput = document.getElementById('text-input');
+    const voiceSelect = document.getElementById('voice-select');
+    const rateInput = document.getElementById('rate');
+    const pitchInput = document.getElementById('pitch');
+    const rateValue = document.getElementById('rate-value');
+    const pitchValue = document.getElementById('pitch-value');
+    const speakBtn = document.getElementById('speak-btn');
+
+    let voices = [];
+
+    // Hàm lấy danh sách giọng đọc có trên thiết bị/trình duyệt
+    function populateVoiceList() {
+        // Lấy tất cả các giọng đọc khả dụng
+        voices = synth.getVoices();
+        
+        // Xóa nội dung cũ của dropdown
+        voiceSelect.innerHTML = '';
+
+        // Lọc và ưu tiên hiển thị các giọng Mỹ (en-US), sau đó tới các giọng tiếng Anh khác
+        const usVoices = voices.filter(voice => voice.lang.includes('en-US'));
+        const otherVoices = voices.filter(voice => voice.lang.startsWith('en') && !voice.lang.includes('en-US'));
+        
+        // Gộp danh sách giọng Mỹ lên đầu
+        const targetVoices = [...usVoices, ...otherVoices];
+
+        if(targetVoices.length === 0) {
+            const option = document.createElement('option');
+            option.textContent = 'Không tìm thấy giọng Anh-Mỹ. Trình duyệt sẽ dùng giọng mặc định.';
+            voiceSelect.appendChild(option);
+            return;
+        }
+
+        // Thêm các giọng đọc vào dropdown
+        targetVoices.forEach(voice => {
+            const option = document.createElement('option');
+            option.textContent = `${voice.name} (${voice.lang}) ${voice.default ? ' [Mặc định]' : ''}`;
+            option.setAttribute('data-lang', voice.lang);
+            option.setAttribute('data-name', voice.name);
+            voiceSelect.appendChild(option);
+        });
+    }
+
+    // Chạy hàm lấy giọng đọc (Cần sự kiện onvoiceschanged vì một số trình duyệt tải giọng đọc bất đồng bộ)
+    populateVoiceList();
+    if (speechSynthesis.onvoiceschanged !== undefined) {
+        speechSynthesis.onvoiceschanged = populateVoiceList;
+    }
+
+    // Cập nhật text hiển thị khi kéo thanh Tốc độ và Cao độ
+    rateInput.addEventListener('input', () => rateValue.textContent = rateInput.value + 'x');
+    pitchInput.addEventListener('input', () => pitchValue.textContent = pitchInput.value);
+
+    // Hàm xử lý phát âm
+    function speak() {
+        // Nếu đang nói thì dừng lại trước khi nói câu mới
+        if (synth.speaking) {
+            synth.cancel();
+        }
+
+        // Kiểm tra xem người dùng đã nhập text chưa, nếu chưa thì tự động lấy text mặc định
+        let textToSpeak = textInput.value.trim();
+        if (textToSpeak === '') {
+            textToSpeak = "Please type something in the box above.";
+            textInput.value = textToSpeak;
+        }
+
+        // Tạo một yêu cầu phát âm mới
+        const utterThis = new SpeechSynthesisUtterance(textToSpeak);
+
+        // Thiết lập cấu hình: Tốc độ và Cao độ
+        utterThis.rate = parseFloat(rateInput.value);
+        utterThis.pitch = parseFloat(pitchInput.value);
+
+        // Chọn đúng giọng đọc người dùng đã chọn trong dropdown
+        const selectedOption = voiceSelect.selectedOptions[0].getAttribute('data-name');
+        const selectedVoice = voices.find(voice => voice.name === selectedOption);
+        
+        if (selectedVoice) {
+            utterThis.voice = selectedVoice;
+        } else {
+            // Nếu không tìm thấy, ép buộc trình duyệt tìm bất cứ giọng nào có mã 'en-US'
+            const defaultUS = voices.find(voice => voice.lang.includes('en-US'));
+            if(defaultUS) utterThis.voice = defaultUS;
+        }
+
+        // Thực hiện phát âm
+        synth.speak(utterThis);
+    }
+
+    // Bắt sự kiện click vào nút Speak
+    speakBtn.addEventListener('click', speak);
+
+    // Bắt sự kiện nhấn phím Enter trong ô nhập liệu để phát âm luôn (nhấn Shift + Enter nếu muốn xuống dòng)
+    textInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            speak();
+        }
+    });
 </script>
 
 </body>
