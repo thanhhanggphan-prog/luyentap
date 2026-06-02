@@ -1,162 +1,33 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ứng dụng Chấm Điểm Phát Âm Anh-Mỹ</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7f6;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-        .container {
-            background-color: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            text-align: center;
-            max-width: 500px;
-            width: 100%;
-        }
-        h1 {
-            color: #333;
-            margin-bottom: 20px;
-            font-size: 24px;
-        }
-        .phrase-box {
-            font-size: 24px;
-            font-weight: bold;
-            color: #1a73e8;
-            margin: 20px 0;
-            padding: 15px;
-            background-color: #e8f0fe;
-            border-radius: 8px;
-            word-wrap: break-word;
-        }
-        .btn-group {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
-        button {
-            padding: 12px 20px;
-            font-size: 15px;
-            font-weight: 600;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            transition: background 0.3s, transform 0.1s;
-        }
-        button:active {
-            transform: scale(0.98);
-        }
-        #startBtn { background-color: #1a73e8; color: white; }
-        #startBtn:hover { background-color: #1557b0; }
-        #startBtn:disabled { background-color: #ccc; cursor: not-allowed; }
-        
-        #nextBtn { background-color: #34a853; color: white; }
-        #nextBtn:hover { background-color: #2d8e47; }
+recognition.onresult = (event) => {
 
-        .custom-phrase-section {
-            border-top: 1px solid #eee;
-            margin-top: 25px;
-            padding-top: 20px;
-            text-align: left;
-        }
-        .custom-phrase-section h3 {
-            margin-top: 0;
-            color: #555;
-            font-size: 16px;
-        }
-        .input-group {
-            display: flex;
-            gap: 8px;
-        }
-        input[type="text"] {
-            flex: 1;
-            padding: 10px 15px;
-            border: 1px solid #ccc;
-            border-radius: 20px;
-            font-size: 14px;
-            outline: none;
-        }
-        input[type="text"]:focus {
-            border-color: #1a73e8;
-        }
-        #addBtn {
-            background-color: #555;
-            color: white;
-            padding: 10px 18px;
-            font-size: 14px;
-        }
-        #addBtn:hover { background-color: #333; }
+  const spokenText =
+    event.results[0][0].transcript;
 
-        .result-box {
-            margin-top: 25px;
-            text-align: left;
-            background: #fafafa;
-            padding: 15px;
-            border-radius: 8px;
-        }
-        .score {
-            font-size: 28px;
-            font-weight: bold;
-            text-align: center;
-            margin: 10px 0;
-        }
-        .status {
-            color: #666;
-            font-style: italic;
-            margin-top: 0;
-        }
-    </style>
-</head>
-<body>
+  const targetText =
+    document.getElementById("targetText").value;
 
-<div class="container">
-    <h1>Phát Âm Chuẩn Anh-Mỹ</h1>
-    <p style="color: #666;">Hãy đọc to cụm từ bên dưới:</p>
-    
-    <div class="phrase-box" id="targetPhrase">Beautiful weather today</div>
-    
-    <div class="btn-group">
-        <button id="startBtn">🎤 Bắt đầu nói</button>
-        <button id="nextBtn">Đổi câu khác</button>
-    </div>
+  const result =
+    calculateScore(targetText, spokenText);
 
-    <div class="result-box">
-        <p class="status" id="statusText">Nhấn nút và cho phép sử dụng Micro để luyện tập.</p>
-        <p><strong>Bạn đã nói:</strong> <span id="speechResult" style="color: #555;">...</span></p>
-        <div class="score" id="scoreResult"></div>
-    </div>
+  document.getElementById("score").innerText =
+    result.score + "%";
 
-    <div class="custom-phrase-section">
-        <h3>Tự thêm câu luyện tập của bạn:</h3>
-        <div class="input-group">
-            <input type="text" id="customInput" placeholder="Nhập câu tiếng Anh vào đây...">
-            <button id="addBtn">Thêm & Luyện câu này</button>
-        </div>
-    </div>
-</div>
+  document.getElementById("spokenText").innerHTML =
+    `
+    <p><b>You said:</b> ${spokenText}</p>
+    <p>${result.html}</p>
+    `;
 
-<script>
-    // Danh sách các câu mẫu ban đầu
-    let phrases = [
-        "Beautiful weather today",
-        "How are you doing",
-        "Google Speech API is awesome",
-        "Practice makes perfect",
-        "I love learning English"
-    ];
+};
 
-    let currentPhraseIndex = 0;
+recognition.onerror = (event) => {
 
-    // Kiểm tra tính năng nhận diện giọng nói của trình duyệt
+  document.getElementById("spokenText").innerHTML =
+    "Error: " + event.error;
+
+};
+
+</script>
+
+</body>
+</html>
